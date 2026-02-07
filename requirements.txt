@@ -1,0 +1,6 @@
+supabase
+python-telegram-bot
+google-generativeai
+python-dotenv
+asyncio
+requests

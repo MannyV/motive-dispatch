@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+vocab.txt
+
+# Environment variables
+.env
+
+# MacOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/

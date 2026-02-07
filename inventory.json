@@ -1,0 +1,34 @@
+[
+  {
+    "id": 1,
+    "name": "Condesa DF",
+    "location": "Mexico City, Mexico",
+    "vibe_tags": ["Eco-Chic", "Brutalist", "Historic"],
+    "perks": ["Complimentary breakfast", "Rooftop bar access"],
+    "description": "Bohemian-chic hotel in a neoclassical building."
+  },
+  {
+    "id": 2,
+    "name": "Carlota Hotel",
+    "location": "Mexico City, Mexico",
+    "vibe_tags": ["Modern", "Pool", "Design-Forward"],
+    "perks": ["Spa credit", "Welcome drink"],
+    "description": "Urban oasis with a stunning central pool."
+  },
+  {
+    "id": 3,
+    "name": "Azulik",
+    "location": "Tulum, Mexico",
+    "vibe_tags": ["Eco-Chic", "Treehouse", "Instagrammable"],
+    "perks": ["Exclusive beach access", "Private dining"],
+    "description": "Eco-friendly, candlelit jungle escape."
+  },
+  {
+    "id": 4,
+    "name": "Habita",
+    "location": "Mexico City, Mexico",
+    "vibe_tags": ["Minimalist", "Luxury", "Standard"],
+    "perks": ["Upgrade on arrival", "Late check-out"],
+    "description": "Sleek and minimalist design in Polanco."
+  }
+]
