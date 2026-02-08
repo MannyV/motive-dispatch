@@ -7,6 +7,8 @@ create table clients (
   name text not null,
   phone_handle text unique,  -- Identifying handle (e.g., Telegram username or phone number)
   vibe_tags text[] default '{}', -- Array of vibe tags (e.g., ["Eco-Chic", "Luxury"])
+  facts jsonb default '{}'::jsonb, -- Flexible dictionary for unstructured facts (e.g., {"children": 3, "pet_name": "Buddy"})
+  status text check (status in ('lead', 'active', 'booked', 'archive')) default 'lead',
   history_summary text,       -- Summarized interaction history
   created_at timestamptz default now()
 );

@@ -2,6 +2,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 from router import Router
 import logging
+import traceback
 
 class Gateway:
     def __init__(self, telegram_token: str, supabase_client):
@@ -45,6 +46,7 @@ class Gateway:
             await update.message.reply_text(response_text)
         except Exception as e:
             logging.error(f"Error handling message: {e}")
+            traceback.print_exc()
             await update.message.reply_text("Sorry, something went wrong while processing your request.")
 
     def run(self):

@@ -13,11 +13,9 @@ class Router:
         user_handle = message.get("user_handle")
 
         # Simple keyword-based routing for MVP
-        travel_keywords = ["hotel", "trip", "travel", "vacation", "flight", "beach", "city", "book", "reserve", "tulum", "mexico"]
+        # travel_keywords = [...] # Removed restrictive filter
         
-        if any(keyword in text for keyword in travel_keywords):
-            print(f"Routing '{text}' to Advisor Skill...")
-            return await self.advisor_skill.handle(message)
-        
-        # Default fallback
-        return "I'm not sure how to help with that yet. Try asking about a trip or hotel!"
+        # Route EVERYTHING to the Advisor Skill (The "Brain")
+        # In a real app, you'd use an LLM here to distinguish between "Travel Request", "Support", etc.
+        print(f"Routing '{text}' to Advisor Skill...")
+        return await self.advisor_skill.handle(message)

@@ -12,25 +12,30 @@ class AdvisorSkill:
         
         # Configure Gemini
         genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        self.model = genai.GenerativeModel('gemini-2.5-flash')
         
         # Load inventory
         with open("inventory.json", "r") as f:
             self.inventory = json.load(f)
 
-    def identify_client(self, user_handle: str):
-        """Finds or creates a client based on their handle."""
-        response = self.supabase.table("clients").select("*").eq("phone_handle", user_handle).execute()
+    async def identify_client(self, client_name: str, advisor_handle: str):
+        """Finds or creates a client based on extracted name, associated with advisor."""
+        # Normalize name for search
+        safe_name = client_name.strip()
+        
+        # Search for existing client by name (Simplified MVP logic)
+        response = self.supabase.table("clients").select("*").ilike("name", f"%{safe_name}%").execute()
         
         if response.data:
             return response.data[0]
         else:
-            # Create new client if not found
+            # Create new client LEAD if not found
             new_client = {
-                "name": f"User_{user_handle}", # Placeholder name
-                "phone_handle": user_handle,
+                "name": safe_name,
+                "phone_handle": f"client_{safe_name}_{advisor_handle}", # Mock handle linking to advisor
                 "vibe_tags": [],
-                "history_summary": "New client detected via Telegram."
+                "status": "lead",
+                "history_summary": f"Lead captured via Sarah (@{advisor_handle})"
             }
             res = self.supabase.table("clients").insert(new_client).execute()
             return res.data[0]
@@ -38,10 +43,18 @@ class AdvisorSkill:
     async def extract_intent(self, message_content: str):
         """Uses Gemini to parse entities and vibe tags."""
         prompt = f"""
-        You are a travel assistant. Extract the following from the message:
+        You are an AI assistant for a travel advisor named Sarah.
+        Extract the structured data from her message about a client.
+        
+        Fields to extract:
+        - client_name (Who is the client? e.g. 'Bella', 'John'. If not specified, use 'Unknown Client')
         - destination (City, Country)
         - hotel_name (if mentioned)
         - vibe_tags (list of adjectives describing the request, e.g. 'Eco-Chic', 'Luxury', 'Budget')
+        - request_status (infer status: 'lead', 'active', 'booked'. Default 'active' if asking for options)
+        - request_status (infer status: 'lead', 'active', 'booked'. Default 'active' if asking for options)
+        - new_facts (Dictionary of general client facts. e.g. {{"children": 3, "diet": "vegan", "budget": "high"}})
+        - user_intent (One of: ['inquiry', 'update_profile', 'trip_planning', 'unknown']. 'inquiry' is when the user asks a question about the client. 'update_profile' is adding facts. 'trip_planning' is asking for a trip.)
         
         Message: "{message_content}"
         
@@ -49,9 +62,13 @@ class AdvisorSkill:
         """
         
         try:
-            # Async generation
-            response = await self.model.generate_content_async(prompt)
+            # Async generation with strict JSON schema (Gemini 1.5 feature)
+            response = await self.model.generate_content_async(
+                prompt,
+                generation_config={"response_mime_type": "application/json"}
+            )
             content = response.text
+            print(f"DEBUG: Raw Gemini response: {content}")
             
             # Cleanup json string if needed
             if "```json" in content:
@@ -62,7 +79,60 @@ class AdvisorSkill:
             return json.loads(content)
         except Exception as e:
             print(f"Error extracting intent: {e}")
-            return {"destination": "Unknown", "vibe_tags": []}
+        except Exception as e:
+            print(f"Error extracting intent: {e}")
+            return {"client_name": "Unknown", "destination": "Unknown", "vibe_tags": [], "new_facts": {}, "user_intent": "unknown"}
+
+    async def answer_client_query(self, client_profile, question):
+        """Uses Gemini to answer a natural language question about a client."""
+        context = f"""
+        Client Profile:
+        Name: {client_profile.get('name')}
+        Vibe Tags: {', '.join(client_profile.get('vibe_tags', []))}
+        Facts: {json.dumps(client_profile.get('facts', {}))}
+        History: {client_profile.get('history_summary')}
+        """
+        
+        prompt = f"""
+        You are meaningful travel advisor assistant.
+        Answer the following question about the client based strictly on the profile usage.
+        
+        Context: {context}
+        Question: {question}
+        
+        Answer naturally and helpful. Do NOT use bold formatting (**) or markdown in your response. Keep it clean text.
+        """
+        
+        try:
+             response = await self.model.generate_content_async(prompt)
+             return response.text
+        except Exception as e:
+            return f"I couldn't generate an answer due to an error: {e}"
+
+    async def update_client_profile(self, client_id, new_vibes, new_facts, new_status=None):
+        """Updates client profile with new vibes, facts, and status."""
+        
+        # specific to supabase-py: fetching current tags/facts first is safest to append/merge
+        current = self.supabase.table("clients").select("vibe_tags, facts").eq("id", client_id).execute()
+        current_data = current.data[0]
+        current_tags = current_data.get("vibe_tags") or []
+        current_facts = current_data.get("facts") or {}
+        
+        # Append and deduplicate Vibes
+        updated_tags = list(set(current_tags + new_vibes))
+        
+        # Merge Facts (New overwrites Old)
+        updated_facts = {**current_facts, **new_facts}
+        
+        update_data = {
+            "vibe_tags": updated_tags,
+            "facts": updated_facts
+        }
+        if new_status:
+            update_data["status"] = new_status
+            
+        self.supabase.table("clients").update(update_data).eq("id", client_id).execute()
+        return updated_tags, updated_facts
 
     def enrich_trip(self, extracted_data):
         """Cross-references extracted tags with local inventory."""
@@ -87,41 +157,103 @@ class AdvisorSkill:
 
         return matches
     
-    def save_trip_draft(self, client_id, extracted_data, enriched_matches):
-        """Saves the structured data into Supabase trips table."""
+    async def save_or_update_trip(self, client_id, extracted_data, enriched_matches):
+        """Creates a new trip or updates an existing draft for the same destination."""
+        destination = extracted_data.get("destination", "").split(",")[0].strip() # Simple normalization
         
-        trip_data = {
-            "client_id": client_id,
-            "status": "draft",
-            "destination": extracted_data.get("destination"),
-            "detected_entities": {
-                "extracted": extracted_data,
-                "inventory_matches": enriched_matches
+        # 1. Check for existing draft for this client & destination
+        # Note: In production you'd want smarter fuzzy matching or ID-based referencing
+        existing = self.supabase.table("trips").select("*")\
+            .eq("client_id", client_id)\
+            .eq("status", "draft")\
+            .ilike("destination", f"%{destination}%")\
+            .execute()
+            
+        if existing.data:
+            # UPDATE existing trip
+            trip_id = existing.data[0]['id']
+            # Merge logic could be complex. For now, we overwrite specifics but keep structure
+            # Ideally we assume the new request adds to the old one.
+            
+            # Fetch old entities
+            old_entities = existing.data[0].get('detected_entities', {})
+            old_vibes = old_entities.get('extracted', {}).get('vibe_tags', [])
+            new_vibes = extracted_data.get('vibe_tags', [])
+            
+            # Merge Vibes
+            merged_vibes = list(set(old_vibes + new_vibes))
+            extracted_data['vibe_tags'] = merged_vibes
+            
+            update_data = {
+                "detected_entities": {
+                    "extracted": extracted_data,
+                    "inventory_matches": enriched_matches
+                },
+                "updated_at": "now()"
             }
-        }
-        
-        result = self.supabase.table("trips").insert(trip_data).execute()
-        return result.data
+            res = self.supabase.table("trips").update(update_data).eq("id", trip_id).execute()
+            return res.data[0], "Updated"
+        else:
+            # CREATE new trip
+            trip_data = {
+                "client_id": client_id,
+                "status": "draft",
+                "destination": extracted_data.get("destination"),
+                "detected_entities": {
+                    "extracted": extracted_data,
+                    "inventory_matches": enriched_matches
+                }
+            }
+            res = self.supabase.table("trips").insert(trip_data).execute()
+            return res.data[0], "Created"
 
     async def handle(self, message):
         """Main handler for the skill."""
-        user_handle = message.get("user_handle") 
+        advisor_handle = message.get("user_handle") 
         text = message.get("text")
         
-        # 1. Identify Client
-        client = self.identify_client(user_handle)
-        print(f"Identified Client: {client['id']}")
-        
-        # 2. Extract Intent
+        # 1. Extract Intent (Who + What)
         intent = await self.extract_intent(text)
-        print(f"Extracted Intent: {intent}")
+        client_name = intent.get("client_name", "Unknown Client")
+        request_status = intent.get("request_status", "active")
+        print(f"Extracted: Client={client_name}, Intent={intent}")
         
-        # 3. Enrichment
+        # 2. Identify Client (Find 'Bella' or create her)
+        client = await self.identify_client(client_name, advisor_handle)
+        print(f"Identified Client ID: {client['id']}")
+        
+        # 3. Update Profile (Add 'Brutalist' to Bella's tags, and 'children': 3 to facts)
+        new_vibes = intent.get("vibe_tags", [])
+        new_facts = intent.get("new_facts", {})
+        
+        updated_tags, updated_facts = await self.update_client_profile(client['id'], new_vibes, new_facts, request_status)
+        print(f"Updated Client Profile: Vibes={updated_tags}, Facts={updated_facts}, Status={request_status}")
+
+        # BRANCH: If User Intent is INQUIRY -> Answer Question
+        if intent.get("user_intent") == "inquiry":
+            answer = await self.answer_client_query(client, text)
+            return f"🤖 **Atlas for {client_name}**:\n{answer}"
+
+        # If there is NO destination, this is just a profile update
+        destination = intent.get("destination")
+        if not destination or destination == "Unknown":
+            # Natural language confirmation
+            return f"Got it. I've updated {client_name}'s profile with that information."
+
+        # 4. Enrichment
         matches = self.enrich_trip(intent)
         print(f"Enriched Matches: {len(matches)} found")
         
-        # 4. Action
-        saved_trip = self.save_trip_draft(client['id'], intent, matches)
-        print(f"Saved Trip Draft: {saved_trip[0]['id']}")
+        # 5. Action (Create or Update Trip Draft)
+        saved_trip, action_type = await self.save_or_update_trip(client['id'], intent, matches)
+        print(f"Trip {action_type}: {saved_trip['id']}")
         
-        return f"Trip draft created for {intent.get('destination')}! Found {len(matches)} matching options."
+        fact_msg = ""
+        if new_facts:
+             fact_msg = f"\n📝 **Added Facts**: {', '.join([f'{k}: {v}' for k,v in new_facts.items()])}"
+
+        if matches:
+            hotel_names = ", ".join([m["name"] for m in matches])
+            return f"✅ **{client_name} Updated** (Status: {request_status}){fact_msg}\n➕ Vibe: {', '.join(new_vibes)}\n\n📝 **Draft {action_type}**: {destination}\nfound matches: {hotel_names}"
+        else:
+            return f"✅ **{client_name} Updated** (Status: {request_status}){fact_msg}\n➕ Vibe: {', '.join(new_vibes)}\n\n📝 **Draft {action_type}**: {destination}"
