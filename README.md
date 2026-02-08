@@ -1,8 +1,8 @@
-# Fora Atlas MVP (OpenClaw Clone)
+# Fora Atlas MVP
 
-An AI Operating System for Travel Advisors that ingests unstructured requests, maps them to "Vibes", and updates a Curator's Canvas.
+Fora Atlas is an AI Operating System for Travel Advisors.
 
-## Architecture (OpenClaw)
+## Architecture
 - **Memory**: Supabase (PostgreSQL + Realtime)
 - **Listener**: Telegram Bot (`gateway.py`)
 - **Brain**: Skill Router (`router.py`)
