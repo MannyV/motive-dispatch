@@ -130,7 +130,6 @@ export default function ClientDrawer({ client, isOpen, onClose, onSave }) {
                                 className="input"
                             >
                                 <option value="lead">Lead</option>
-                                <option value="outreach">Outreach</option>
                                 <option value="proposal">Proposal</option>
                                 <option value="negotiation">Negotiation</option>
                                 <option value="closed">Closed</option>

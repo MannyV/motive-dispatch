@@ -1,20 +1,18 @@
-# Environment Variables
-.env
 
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
+*.py[cod]
+*$py.class
 .venv/
-pip-log.txt
-pip-delete-this-directory.txt
+.env
 
-# Mac
-.DS_Store
+# Node.js / Next.js
+dashboard/node_modules/
+dashboard/.next/
+dashboard/out/
+dashboard/build/
+dashboard/.DS_Store
+*.log
 
 # Supabase
-supabase/functions/*/deno.lock
+supabase/

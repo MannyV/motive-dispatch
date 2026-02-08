@@ -22,8 +22,18 @@ export default function PipelineCard({ client, onClick }) {
   // The query will join 'trips' and order by created_at desc, so we take the first one
   const latestTrip = client.trips && client.trips.length > 0 ? client.trips[0] : null;
 
+  const handleDragStart = (e) => {
+    e.dataTransfer.setData('clientId', client.id);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
   return (
-    <div className="pipeline-card" onClick={() => onClick(client)}>
+    <div
+      className="pipeline-card"
+      onClick={() => onClick(client)}
+      draggable="true"
+      onDragStart={handleDragStart}
+    >
       <div className="card-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <img
@@ -32,6 +42,16 @@ export default function PipelineCard({ client, onClick }) {
             className="client-avatar"
           />
           <h3 className="client-name">{client.name}</h3>
+        </div>
+        <div className="drag-handle">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="5" cy="4" r="1.5" fill="#CBD5E1" />
+            <circle cx="5" cy="8" r="1.5" fill="#CBD5E1" />
+            <circle cx="5" cy="12" r="1.5" fill="#CBD5E1" />
+            <circle cx="11" cy="4" r="1.5" fill="#CBD5E1" />
+            <circle cx="11" cy="8" r="1.5" fill="#CBD5E1" />
+            <circle cx="11" cy="12" r="1.5" fill="#CBD5E1" />
+          </svg>
         </div>
       </div>
 
@@ -61,17 +81,19 @@ export default function PipelineCard({ client, onClick }) {
       <style jsx>{`
         .pipeline-card {
           background: white;
-          border: 1px solid var(--border-subtle);
-          border-radius: var(--radius-md);
+          border: 1px solid #e5e7eb;
+          border-radius: 12px; /* Rounded corners */
           padding: 1rem;
-          margin-bottom: 0.75rem;
-          box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-          cursor: pointer;
-          transition: box-shadow 0.2s, transform 0.1s;
+          margin-bottom: 0.75rem; /* Separation */
+          box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* Subtle shadow for detached look */
+          cursor: grab; /* Indicate draggable */
+          transition: transform 0.2s, box-shadow 0.2s;
         }
         .pipeline-card:hover {
-          box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-          transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .pipeline-card:active {
+            cursor: grabbing;
         }
         .card-header {
           display: flex;
@@ -83,6 +105,12 @@ export default function PipelineCard({ client, onClick }) {
           font-weight: 600;
           font-size: 0.95rem;
           color: var(--text-primary);
+        }
+        .drag-handle {
+            color: #CBD5E1;
+            cursor: grab;
+            display: flex;
+            align-items: center;
         }
         .client-avatar {
             width: 28px;

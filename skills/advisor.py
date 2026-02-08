@@ -40,31 +40,53 @@ class AdvisorSkill:
             res = self.supabase.table("clients").insert(new_client).execute()
             return res.data[0]
 
-    async def extract_intent(self, message_content: str):
-        """Uses Gemini to parse entities and vibe tags."""
-        prompt = f"""
+    async def extract_intent(self, message_content: str, image_path: str = None, audio_path: str = None):
+        """Uses Gemini to parse entities and vibe tags from text, image, or audio."""
+        prompt_text = f"""
         You are an AI assistant for a travel advisor named Sarah.
-        Extract the structured data from her message about a client.
+        Extract the structured data from her message (and optional image/audio) about a client.
         
         Fields to extract:
         - client_name (Who is the client? e.g. 'Bella', 'John'. If not specified, use 'Unknown Client')
-        - destination (City, Country)
+        - destination (City, Country. Use content if available)
         - hotel_name (if mentioned)
         - vibe_tags (list of adjectives describing the request, e.g. 'Eco-Chic', 'Luxury', 'Budget')
-        - request_status (infer status: 'lead', 'active', 'booked'. Default 'active' if asking for options)
-        - request_status (infer status: 'lead', 'outreach', 'proposal', 'negotiation', 'closed', 'booked'. Default to current status or 'outreach' if new)
+        - request_status (infer status: 'lead', 'proposal', 'negotiation', 'closed', 'booked'. Default to current status or 'lead' if new)
         - new_facts (Dictionary of general client facts. e.g. {{"children": 3, "diet": "vegan", "budget": "high"}})
         - user_intent (One of: ['inquiry', 'update_profile', 'trip_planning', 'unknown']. 'inquiry' is when the user asks a question about the client. 'update_profile' is adding facts. 'trip_planning' is asking for a trip.)
         
         Message: "{message_content}"
-        
-        Return ONLY valid JSON. Do not include markdown formatting like ```json.
         """
+        
+        content_parts = [prompt_text]
+        
+        if image_path:
+            import PIL.Image
+            try:
+                img = PIL.Image.open(image_path)
+                content_parts.append(img)
+                content_parts.append(" Analyze this image for travel details.")
+            except Exception as e:
+                print(f"Error loading image: {e}")
+
+        if audio_path:
+            try:
+                # Upload audio to Gemini
+                print(f"Uploading audio: {audio_path}")
+                audio_file = genai.upload_file(path=audio_path)
+                # Wait for processing? Usually fast for short clips.
+                content_parts.append(audio_file)
+                content_parts.append(" Analyze this voice note for travel details.")
+            except Exception as e:
+                print(f"Error loading audio: {e}")
+        
+        content_parts.append("Return ONLY valid JSON. Do not include markdown formatting like ```json.")
         
         try:
             # Async generation with strict JSON schema (Gemini 1.5 feature)
+            # content_parts can contain text and images
             response = await self.model.generate_content_async(
-                prompt,
+                content_parts,
                 generation_config={"response_mime_type": "application/json"}
             )
             content = response.text
@@ -211,9 +233,11 @@ class AdvisorSkill:
         """Main handler for the skill."""
         advisor_handle = message.get("user_handle") 
         text = message.get("text")
+        image_path = message.get("image_path")
+        audio_path = message.get("audio_path")
         
         # 1. Extract Intent (Who + What)
-        intent = await self.extract_intent(text)
+        intent = await self.extract_intent(text, image_path, audio_path)
         client_name = intent.get("client_name", "Unknown Client")
         request_status = intent.get("request_status", "active")
         print(f"Extracted: Client={client_name}, Intent={intent}")
