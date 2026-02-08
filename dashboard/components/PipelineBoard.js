@@ -4,9 +4,9 @@ import { supabase } from '../lib/supabase';
 import PipelineCard from './PipelineCard';
 
 const COLUMNS = [
-    { id: 'lead', label: 'Leads', color: '#6366f1' },
+    { id: 'lead', label: 'Leads', color: '#ef4444' }, // Red for Leads
     { id: 'proposal', label: 'Proposal', color: '#f59e0b' },
-    { id: 'negotiation', label: 'Negotiation', color: '#10b981' },
+    { id: 'planning', label: 'Planning', color: '#10b981' }, // Renamed from Negotiation
     { id: 'closed', label: 'Closed', color: '#6b7280' },
 ];
 

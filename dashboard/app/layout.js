@@ -1,7 +1,7 @@
 import '../styles/globals.css'
 
 export const metadata = {
-    title: 'Fora Atlas - Curator Canvas',
+    title: 'Sarah\'s Atlas',
     description: 'AI Operating System for Travel Advisors',
 }
 

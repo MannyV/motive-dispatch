@@ -51,7 +51,7 @@ class AdvisorSkill:
         - destination (City, Country. Use content if available)
         - hotel_name (if mentioned)
         - vibe_tags (list of adjectives describing the request, e.g. 'Eco-Chic', 'Luxury', 'Budget')
-        - request_status (infer status: 'lead', 'proposal', 'negotiation', 'closed', 'booked'. Default to current status or 'lead' if new)
+        - request_status (infer status: 'lead', 'proposal', 'planning', 'closed', 'booked'. Default to current status or 'lead' if new)
         - new_facts (Dictionary of general client facts. e.g. {{"children": 3, "diet": "vegan", "budget": "high"}})
         - user_intent (One of: ['inquiry', 'update_profile', 'trip_planning', 'unknown']. 'inquiry' is when the user asks a question about the client. 'update_profile' is adding facts. 'trip_planning' is asking for a trip.)
         

@@ -7,7 +7,9 @@ export default function ClientDrawer({ client, isOpen, onClose, onSave }) {
         name: '',
         status: 'lead',
         vibe_tags: '',
-        facts: '{}'
+        facts: '{}',
+        contact_info: {},
+        preferred_contact: ''
     });
     const [loading, setLoading] = useState(false);
 
@@ -20,10 +22,12 @@ export default function ClientDrawer({ client, isOpen, onClose, onSave }) {
                 name: client.name || '',
                 status: client.status || 'lead',
                 vibe_tags: (client.vibe_tags || []).join(', '),
-                facts: JSON.stringify(client.facts || {}, null, 2)
+                facts: JSON.stringify(client.facts || {}, null, 2),
+                contact_info: client.facts?.contact_info || {},
+                preferred_contact: client.facts?.preferred_contact || ''
             });
 
-            // Fetch Trips
+            // ... fetch trips ...
             const fetchTrips = async () => {
                 const { data } = await supabase
                     .from('trips')
@@ -39,7 +43,9 @@ export default function ClientDrawer({ client, isOpen, onClose, onSave }) {
                 name: '',
                 status: 'lead',
                 vibe_tags: '',
-                facts: '{}'
+                facts: '{}',
+                contact_info: {},
+                preferred_contact: ''
             });
             setTrips([]);
         }
@@ -51,11 +57,18 @@ export default function ClientDrawer({ client, isOpen, onClose, onSave }) {
 
         try {
             // Parse data
+            // Parse data
+            const facts = JSON.parse(formData.facts);
+
+            // Merge contact info into facts
+            facts.contact_info = formData.contact_info;
+            facts.preferred_contact = formData.preferred_contact;
+
             const payload = {
                 name: formData.name,
                 status: formData.status,
                 vibe_tags: formData.vibe_tags.split(',').map(t => t.trim()).filter(Boolean),
-                facts: JSON.parse(formData.facts)
+                facts: facts
             };
 
             let error;
@@ -131,7 +144,7 @@ export default function ClientDrawer({ client, isOpen, onClose, onSave }) {
                             >
                                 <option value="lead">Lead</option>
                                 <option value="proposal">Proposal</option>
-                                <option value="negotiation">Negotiation</option>
+                                <option value="planning">Planning</option> {/* Renamed from Negotiation */}
                                 <option value="closed">Closed</option>
                                 <option value="archive">Archive</option>
                             </select>
@@ -148,8 +161,42 @@ export default function ClientDrawer({ client, isOpen, onClose, onSave }) {
                             />
                         </div>
 
+                        <div className="form-group">
+                            <label>Contact Methods</label>
+                            <div className="contact-options">
+                                {['Instagram', 'WhatsApp', 'Email', 'Phone'].map(method => (
+                                    <label key={method} className="checkbox-label">
+                                        <input
+                                            type="checkbox"
+                                            checked={formData.contact_methods?.includes(method)}
+                                            onChange={e => {
+                                                const current = formData.contact_methods || [];
+                                                const updated = e.target.checked
+                                                    ? [...current, method]
+                                                    : current.filter(m => m !== method);
+
+                                                // If deselecting preferred, clear it
+                                                let newPreferred = formData.preferred_contact;
+                                                if (!e.target.checked && formData.preferred_contact === method) {
+                                                    newPreferred = '';
+                                                }
+
+                                                setFormData({
+                                                    ...formData,
+                                                    contact_methods: updated,
+                                                    preferred_contact: newPreferred
+                                                });
+                                            }}
+                                        />
+                                        {method}
+                                    </label>
+                                ))}
+                            </div>
+                        </div>
+
+
                         <div className="form-group" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                            <label>Facts (JSON)</label>
+                            <label>Other Facts (JSON)</label>
                             <textarea
                                 value={formData.facts}
                                 onChange={e => setFormData({ ...formData, facts: e.target.value })}
@@ -305,6 +352,26 @@ export default function ClientDrawer({ client, isOpen, onClose, onSave }) {
         }
         .badge-booked {
             background-color: #10b981; /* emerald-500 */
+        }
+        .contact-inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .contact-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .method-label {
+            width: 80px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .input-sm {
+            padding: 0.5rem;
+            font-size: 0.85rem; 
+            flex: 1;
         }
       `}</style>
         </div>

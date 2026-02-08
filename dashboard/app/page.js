@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import '../styles/globals.css';
+import TopNav from '../components/TopNav';
 import PipelineBoard from '../components/PipelineBoard';
 import ClientDrawer from '../components/ClientDrawer';
 
@@ -35,11 +36,12 @@ export default function Home() {
 
     return (
         <main>
-            <div className="container">
-                <header className="header">
+            <TopNav />
+            <div className="container" style={{ padding: '2rem' }}>
+                <header className="header" style={{ marginBottom: '2rem' }}>
                     <div>
-                        <h1 className="title">Fora's Curator Canvas</h1>
-                        <p style={{ color: 'var(--text-secondary)' }}>Design the perfect journey.</p>
+                        <h1 className="title" style={{ fontSize: '1.8rem' }}>Client Pipeline</h1>
+                        <p style={{ color: 'var(--text-secondary)' }}>Manage your active client journeys and trip proposals.</p>
                     </div>
                     <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                         {/* Vibe Filter */}

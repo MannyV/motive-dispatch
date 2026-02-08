@@ -17,10 +17,21 @@ const getFlag = (destination) => {
   return '✈️'; // Fallback
 };
 
+const getContactIcon = (method) => {
+  switch (method?.toLowerCase()) {
+    case 'instagram': return '📸';
+    case 'whatsapp': return '💬';
+    case 'email': return '✉️';
+    case 'phone': return '📞';
+    default: return null;
+  }
+};
+
 export default function PipelineCard({ client, onClick }) {
   // Find the latest trip if available
   // The query will join 'trips' and order by created_at desc, so we take the first one
   const latestTrip = client.trips && client.trips.length > 0 ? client.trips[0] : null;
+  const contactIcon = getContactIcon(client.facts?.preferred_contact);
 
   const handleDragStart = (e) => {
     e.dataTransfer.setData('clientId', client.id);
@@ -42,16 +53,23 @@ export default function PipelineCard({ client, onClick }) {
             className="client-avatar"
           />
           <h3 className="client-name">{client.name}</h3>
+          {contactIcon && (
+            <span className="contact-icon" title={`Preferred: ${client.facts?.preferred_contact}`}>
+              {contactIcon}
+            </span>
+          )}
         </div>
-        <div className="drag-handle">
-          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="5" cy="4" r="1.5" fill="#CBD5E1" />
-            <circle cx="5" cy="8" r="1.5" fill="#CBD5E1" />
-            <circle cx="5" cy="12" r="1.5" fill="#CBD5E1" />
-            <circle cx="11" cy="4" r="1.5" fill="#CBD5E1" />
-            <circle cx="11" cy="8" r="1.5" fill="#CBD5E1" />
-            <circle cx="11" cy="12" r="1.5" fill="#CBD5E1" />
-          </svg>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div className="drag-handle">
+            <svg width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="5" cy="4" r="1.5" fill="#CBD5E1" />
+              <circle cx="5" cy="8" r="1.5" fill="#CBD5E1" />
+              <circle cx="5" cy="12" r="1.5" fill="#CBD5E1" />
+              <circle cx="11" cy="4" r="1.5" fill="#CBD5E1" />
+              <circle cx="11" cy="8" r="1.5" fill="#CBD5E1" />
+              <circle cx="11" cy="12" r="1.5" fill="#CBD5E1" />
+            </svg>
+          </div>
         </div>
       </div>
 
@@ -111,6 +129,15 @@ export default function PipelineCard({ client, onClick }) {
             cursor: grab;
             display: flex;
             align-items: center;
+        }
+        .contact-icon {
+            font-size: 0.85rem;
+            cursor: help;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+        }
+        .contact-icon:hover {
+            opacity: 1;
         }
         .client-avatar {
             width: 28px;

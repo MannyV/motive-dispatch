@@ -26,7 +26,7 @@ DESTINATIONS = [
     "Royal Mansour, Marrakech", "Post Ranch Inn, Big Sur", "Villa d'Este, Lake Como"
 ]
 
-STATUSES = ['lead', 'outreach', 'proposal', 'negotiation', 'closed']
+STATUSES = ['lead', 'proposal', 'planning', 'closed']
 
 def seed():
     print("Seeding 12 VIP Clients...")
@@ -41,6 +41,27 @@ def seed():
         status = STATUSES[i % len(STATUSES)] # Cycle through statuses
         vibes = random.sample(VIBES, k=random.randint(1, 3))
         
+        # Contact Methods & Preference
+        contact_opts = ["Instagram", "WhatsApp", "Email", "Phone"]
+        possible_methods = {}
+        
+        if random.random() > 0.1:
+            # Generate 1-3 methods with fake handles
+            selected_methods = random.sample(contact_opts, k=random.randint(1, 3))
+            for m in selected_methods:
+                if m == "Instagram":
+                    possible_methods[m] = f"@{name.replace(' ', '').lower()}"
+                elif m == "WhatsApp":
+                    possible_methods[m] = f"+1-555-01{random.randint(10, 99)}"
+                elif m == "Email":
+                    possible_methods[m] = f"{name.split(' ')[0].lower()}@example.com"
+                elif m == "Phone":
+                    possible_methods[m] = f"555-01{random.randint(10, 99)}"
+            
+            preferred = random.choice(list(possible_methods.keys()))
+        else:
+            preferred = None
+
         client_data = {
             "name": name,
             "status": status,
@@ -48,7 +69,9 @@ def seed():
             "facts": {
                 "budget": random.choice(["high", "mid", "low"]),
                 "diet": random.choice(["vegan", "gluten-free", "none", "pescatarian"]),
-                "notes": "VIP handling required."
+                "notes": "VIP handling required.",
+                "contact_info": possible_methods, # Changed from list to dict
+                "preferred_contact": preferred
             },
             "created_at": (datetime.now() - timedelta(days=random.randint(1, 30))).isoformat()
         }
