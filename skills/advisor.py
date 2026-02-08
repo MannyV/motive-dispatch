@@ -17,43 +17,67 @@ class AdvisorSkill:
         # Load inventory
         with open("inventory.json", "r") as f:
             self.inventory = json.load(f)
+            
+        # Conversation State: {user_handle: {"state": "waiting_for_x", "data": {...}}}
+        self.user_sessions = {}
 
     async def identify_client(self, client_name: str, advisor_handle: str):
-        """Finds or creates a client based on extracted name, associated with advisor."""
+        """
+        Finds a client based on extracted name.
+        Returns: (client_data, status)
+        Status: 'FOUND', 'NOT_FOUND', 'AMBIGUOUS'
+        """
+        if not client_name or client_name in ["Unknown", "None", "Unknown Client"]:
+            return None, "Start"
+
         # Normalize name for search
         safe_name = client_name.strip()
         
-        # Search for existing client by name (Simplified MVP logic)
+        # Search for existing client by name
         response = self.supabase.table("clients").select("*").ilike("name", f"%{safe_name}%").execute()
         
         if response.data:
-            return response.data[0]
+            if len(response.data) == 1:
+                return response.data[0], "FOUND"
+            else:
+                return response.data, "AMBIGUOUS" # Return list of matches
         else:
-            # Create new client LEAD if not found
-            new_client = {
-                "name": safe_name,
-                "phone_handle": f"client_{safe_name}_{advisor_handle}", # Mock handle linking to advisor
-                "vibe_tags": [],
-                "status": "lead",
-                "history_summary": f"Lead captured via Sarah (@{advisor_handle})"
-            }
-            res = self.supabase.table("clients").insert(new_client).execute()
-            return res.data[0]
+            return None, "NOT_FOUND"
+
+    async def create_client(self, client_name: str, advisor_handle: str, initial_data: dict = None):
+        """Creates a new client."""
+        new_client = {
+            "name": client_name,
+            "phone_handle": f"client_{client_name}_{advisor_handle}_{int(datetime.now().timestamp())}", 
+            "vibe_tags": initial_data.get("vibe_tags", []) if initial_data else [],
+            "facts": initial_data.get("new_facts", {}) if initial_data else {},
+            "status": "lead",
+            "history_summary": f"Lead captured via Sarah (@{advisor_handle})"
+        }
+        res = self.supabase.table("clients").insert(new_client).execute()
+        return res.data[0]
 
     async def extract_intent(self, message_content: str, image_path: str = None, audio_path: str = None):
         """Uses Gemini to parse entities and vibe tags from text, image, or audio."""
         prompt_text = f"""
-        You are an AI assistant for a travel advisor named Sarah.
+        You are Atlas, a Chief of Staff and AI assistant for a high-end travel advisor named Sarah.
+        Your goal is to organize her client knowledge base and be helpful, conversational, and precise.
+        
         Extract the structured data from her message (and optional image/audio) about a client.
         
         Fields to extract:
-        - client_name (Who is the client? e.g. 'Bella', 'John'. If not specified, use 'Unknown Client')
+        - client_name (Who is the client? e.g. 'Bella', 'John'. If NOT specified/clear, use 'Unknown' or 'None')
         - destination (City, Country. Use content if available)
         - hotel_name (if mentioned)
         - vibe_tags (list of adjectives describing the request, e.g. 'Eco-Chic', 'Luxury', 'Budget')
-        - request_status (infer status: 'lead', 'proposal', 'planning', 'closed', 'booked'. Default to current status or 'lead' if new)
+        - request_status (infer status: 'lead', 'proposal', 'planning', 'closed', 'booked'. Default to 'lead')
         - new_facts (Dictionary of general client facts. e.g. {{"children": 3, "diet": "vegan", "budget": "high"}})
-        - user_intent (One of: ['inquiry', 'update_profile', 'trip_planning', 'unknown']. 'inquiry' is when the user asks a question about the client. 'update_profile' is adding facts. 'trip_planning' is asking for a trip.)
+        - user_intent (One of: ['inquiry', 'update_profile', 'trip_planning', 'confirmation', 'negation', 'unknown']. 
+           - 'inquiry': user asks a question about existing data. 
+           - 'update_profile': user provides new info.
+           - 'confirmation': user says "yes", "do it", "create it".
+           - 'negation': user says "no", "cancel".
+          )
         
         Message: "{message_content}"
         """
@@ -230,54 +254,104 @@ class AdvisorSkill:
             return res.data[0], "Created"
 
     async def handle(self, message):
-        """Main handler for the skill."""
+        """Main handler for the skill with conversational logic."""
         advisor_handle = message.get("user_handle") 
         text = message.get("text")
         image_path = message.get("image_path")
         audio_path = message.get("audio_path")
         
+        # 0. Check for Active Session (Waiting for user response)
+        if advisor_handle in self.user_sessions:
+            session = self.user_sessions[advisor_handle]
+            state = session.get("state")
+            data = session.get("data")
+            
+            if state == "confirm_create_client":
+                # User is responding to "Should I create X?"
+                # Simple check for simple replies. For complex, we might re-run extract_intent.
+                if any(w in text.lower() for w in ["yes", "yeah", "sure", "do it", "create", "ok"]):
+                    # Create the client
+                    pending_client = data.get("client_name")
+                    initial_intent = data.get("intent")
+                    
+                    new_client = await self.create_client(pending_client, advisor_handle, initial_intent)
+                    del self.user_sessions[advisor_handle] # Clear session
+                    
+                    return f"✅ **Profile Created**: I've added {pending_client} to your client list as a Lead.\nWhat would you like to add for them?"
+                
+                elif any(w in text.lower() for w in ["no", "nope", "cancel", "wrong"]):
+                    del self.user_sessions[advisor_handle]
+                    return "Understood. I won't create the profile. Let me know if you need anything else."
+                
+                # If ambiguous response, fall through to normal processing (maybe they changed topic)
+        
         # 1. Extract Intent (Who + What)
         intent = await self.extract_intent(text, image_path, audio_path)
-        client_name = intent.get("client_name", "Unknown Client")
-        request_status = intent.get("request_status", "active")
+        client_name = intent.get("client_name")
+        user_intent = intent.get("user_intent")
+
         print(f"Extracted: Client={client_name}, Intent={intent}")
         
-        # 2. Identify Client (Find 'Bella' or create her)
-        client = await self.identify_client(client_name, advisor_handle)
-        print(f"Identified Client ID: {client['id']}")
+        # 2. Identify Client
+        client_data, status = await self.identify_client(client_name, advisor_handle)
         
-        # 3. Update Profile (Add 'Brutalist' to Bella's tags, and 'children': 3 to facts)
-        new_vibes = intent.get("vibe_tags", [])
-        new_facts = intent.get("new_facts", {})
+        # --- LOGIC BRANCHES ---
         
-        updated_tags, updated_facts = await self.update_client_profile(client['id'], new_vibes, new_facts, request_status)
-        print(f"Updated Client Profile: Vibes={updated_tags}, Facts={updated_facts}, Status={request_status}")
+        # CASE A: Client NOT FOUND -> Ask to Create
+        if status == "NOT_FOUND":
+            if client_name and client_name not in ["Unknown", "None"]:
+                # Store intent in session and ask confirmation
+                self.user_sessions[advisor_handle] = {
+                    "state": "confirm_create_client",
+                    "data": {"client_name": client_name, "intent": intent}
+                }
+                return f"🧐 I don't see a profile for **{client_name}**. Should I create a new client profile for them?"
+            else:
+                return "I'm listening. Could you specify which client you're referring to?"
 
-        # BRANCH: If User Intent is INQUIRY -> Answer Question
-        if intent.get("user_intent") == "inquiry":
-            answer = await self.answer_client_query(client, text)
-            return f"🤖 **Atlas for {client_name}**:\n{answer}"
+        # CASE B: Client AMBIGUOUS -> Ask to Clarify (MVP: Just pick first or ask)
+        if status == "AMBIGUOUS":
+            # list names
+            names = [c['name'] for c in client_data]
+            return f"🤔 I found multiple clients matching '{client_name}': {', '.join(names)}. Could you be more specific?"
 
-        # If there is NO destination, this is just a profile update
-        destination = intent.get("destination")
-        if not destination or destination == "Unknown":
-            # Natural language confirmation
-            return f"Got it. I've updated {client_name}'s profile with that information."
+        # CASE C: Client FOUND -> Process Update
+        if status == "FOUND":
+            client = client_data
+            
+             # BRANCH: If User Intent is INQUIRY -> Answer Question
+            if user_intent == "inquiry":
+                answer = await self.answer_client_query(client, text)
+                return f"🤖 **Atlas for {client['name']}**:\n{answer}"
+            
+            # Update Profile
+            new_vibes = intent.get("vibe_tags", [])
+            new_facts = intent.get("new_facts", {})
+            request_status = intent.get("request_status", client.get("status")) # Default to existing
+            
+            updated_tags, updated_facts = await self.update_client_profile(client['id'], new_vibes, new_facts, request_status)
+            
+            # Trip Enrichment
+            destination = intent.get("destination")
+            matches = []   
+            if destination and destination != "Unknown":
+                matches = self.enrich_trip(intent)
+                saved_trip, action_type = await self.save_or_update_trip(client['id'], intent, matches)
+                
+                hotel_msg = ""
+                if matches:
+                    hotel_msg = f"\n🏨 Matches: {', '.join([m['name'] for m in matches])}"
+                
+                return f"✅ **Atlas Update**: Updated **{client['name']}**.\n📝 Drafted trip to **{destination}**.{hotel_msg}"
+            
+            # Just Profile Update
+            updates = []
+            if new_vibes: updates.append(f"Vibes: {', '.join(new_vibes)}")
+            if new_facts: updates.append(f"Facts: {len(new_facts)} added")
+            
+            msg = f"✅ **Atlas Update**: Saved info for **{client['name']}**."
+            if updates:
+                msg += f"\n({', '.join(updates)})"
+            return msg
 
-        # 4. Enrichment
-        matches = self.enrich_trip(intent)
-        print(f"Enriched Matches: {len(matches)} found")
-        
-        # 5. Action (Create or Update Trip Draft)
-        saved_trip, action_type = await self.save_or_update_trip(client['id'], intent, matches)
-        print(f"Trip {action_type}: {saved_trip['id']}")
-        
-        fact_msg = ""
-        if new_facts:
-             fact_msg = f"\n📝 **Added Facts**: {', '.join([f'{k}: {v}' for k,v in new_facts.items()])}"
-
-        if matches:
-            hotel_names = ", ".join([m["name"] for m in matches])
-            return f"✅ **{client_name} Updated** (Status: {request_status}){fact_msg}\n➕ Vibe: {', '.join(new_vibes)}\n\n📝 **Draft {action_type}**: {destination}\nfound matches: {hotel_names}"
-        else:
-            return f"✅ **{client_name} Updated** (Status: {request_status}){fact_msg}\n➕ Vibe: {', '.join(new_vibes)}\n\n📝 **Draft {action_type}**: {destination}"
+        return "I'm here. Tell me about a client or a trip."
