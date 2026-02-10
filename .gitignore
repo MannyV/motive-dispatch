@@ -16,3 +16,4 @@ dashboard/.DS_Store
 
 # Supabase
 supabase/
+temp/

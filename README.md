@@ -47,4 +47,4 @@ python main.py
    - Extract "Mexico City" and "Brutalist" vibe.
    - Match with `inventory.json` (e.g., Condesa DF).
    - Save a **Draft Trip** to Supabase.
-4. Check your Supabase `trips` table to see the result.
+4. Check your Supabase `trips` table to verify the result.
