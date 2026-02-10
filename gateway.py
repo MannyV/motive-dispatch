@@ -116,5 +116,5 @@ class Gateway:
         # If I call `gateway.run()` inside `async def main()`, it will block the event loop if it's sync.
         # python-telegram-bot v20+ encourages using `application.run_polling()`.
         
-        print("Bot is polling...")
+        logging.info("Bot is polling...")
         self.app.run_polling()
