@@ -3,6 +3,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 from router import Router
 import logging
 import traceback
+import os
 
 class Gateway:
     def __init__(self, telegram_token: str, supabase_client):
@@ -54,7 +55,6 @@ class Gateway:
         photo_file = await update.message.photo[-1].get_file()
         
         # Download (in memory or temp file)
-        import os
         os.makedirs("temp", exist_ok=True)
         file_path = f"temp/{photo_file.file_id}.jpg"
         await photo_file.download_to_drive(file_path)
@@ -77,7 +77,6 @@ class Gateway:
         voice_file = await update.message.voice.get_file()
         
         # Download
-        import os
         os.makedirs("temp", exist_ok=True)
         # Telegram usually returns .oga or .ogg for voice
         file_path = f"temp/{voice_file.file_id}.ogg" 
