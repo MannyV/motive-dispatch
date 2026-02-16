@@ -10,6 +10,12 @@ const COLUMNS = [
     { id: 'closed', label: 'Closed', color: '#6b7280' },
 ];
 
+
+/**
+ * PipelineBoard Component
+ * Displays client pipeline stages in a drag-and-drop board format.
+ * Columns: Leads, Proposal, Planning, Closed.
+ */
 export default function PipelineBoard({ onCardClick, budgetFilter, tagFilter }) {
     const [clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
