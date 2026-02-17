@@ -29,7 +29,6 @@ class Gateway:
         await update.message.reply_text(f"Hello @{user}! I am Fora Atlas. Send me a travel request, a photo, or a voice note!")
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        # ... (same as before)
         """Handle incoming text messages."""
         text = update.message.text
         user_handle = update.effective_user.username or str(update.effective_user.id)
@@ -46,7 +45,6 @@ class Gateway:
         await self._route_and_reply(update, message_payload)
 
     async def handle_photo(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        # ... (same as before)
         """Handle incoming photo messages."""
         user_handle = update.effective_user.username or str(update.effective_user.id)
         caption = update.message.caption or ""
@@ -93,7 +91,7 @@ class Gateway:
         
         await self._route_and_reply(update, message_payload)
 
-    async def _route_and_reply(self, update, payload):
+    async def _route_and_reply(self, update: Update, payload: dict):
         # Route the message
         try:
             response_text = await self.router.route(payload)
