@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .venv/
+venv/
 .env
 
 # Node.js / Next.js
@@ -12,8 +13,10 @@ dashboard/.next/
 dashboard/out/
 dashboard/build/
 dashboard/.DS_Store
+dashboard/.env.local
 *.log
 
 # Supabase
 supabase/
 temp/
+nohup.out
