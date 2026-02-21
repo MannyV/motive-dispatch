@@ -4,7 +4,7 @@ export default function TopNav() {
     return (
         <nav className="top-nav">
             <div className="nav-left">
-                <div className="logo">FORA ATLAS</div>
+                <div className="logo">A-TO-Z DISPATCH</div>
                 <div className="nav-links">
                     <a href="#" className="nav-link active">Clients</a>
                     <a href="#" className="nav-link">Trips</a>
@@ -15,13 +15,13 @@ export default function TopNav() {
             <div className="nav-right">
                 <div className="user-profile">
                     <img
-                        src="https://i.pravatar.cc/150?u=sarah_advisor"
+                        src="https://i.pravatar.cc/150?u=sarah_dispatch"
                         alt="Sarah"
                         className="user-avatar"
                     />
                     <div className="user-info">
                         <span className="user-name">Sarah's Atlas</span>
-                        <span className="user-role">Senior Advisor</span>
+                        <span className="user-role">Lead Dispatcher</span>
                     </div>
                 </div>
                 <div className="nav-actions">

@@ -26,7 +26,7 @@ class Gateway:
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /start command."""
         user = update.effective_user.username
-        await update.message.reply_text(f"Hello @{user}! I am Fora Atlas. Send me a travel request, a photo, or a voice note!")
+        await update.message.reply_text(f"Hello @{user}! I am A-to-Z Dispatch. Send me complex drop-off instructions, a photo, or a voice note!")
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle incoming text messages."""

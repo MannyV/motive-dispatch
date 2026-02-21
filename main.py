@@ -18,7 +18,7 @@ if not all([SUPABASE_URL, SUPABASE_KEY, TELEGRAM_TOKEN]):
 
 
 def main():
-    print("Starting Fora Atlas MVP...")
+    print("Starting A-to-Z Dispatch MVP...")
     
     # Initialize Supabase Client
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)

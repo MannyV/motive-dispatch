@@ -6,7 +6,7 @@ import google.generativeai as genai
 from google.generativeai.types import HarmCategory, HarmBlockThreshold
 from supabase import Client
 
-class AdvisorSkill:
+class DispatchSkill:
     def __init__(self, supabase_client: Client):
         self.supabase = supabase_client
         
@@ -21,7 +21,7 @@ class AdvisorSkill:
         # Conversation State: {user_handle: {"state": "waiting_for_x", "data": {...}}}
         self.user_sessions = {}
 
-    async def identify_client(self, client_name: str, advisor_handle: str):
+    async def identify_client(self, client_name: str, da_handle: str):
         """
         Finds a client based on extracted name.
         Returns: (client_data, status)
@@ -44,15 +44,15 @@ class AdvisorSkill:
         else:
             return None, "NOT_FOUND"
 
-    async def create_client(self, client_name: str, advisor_handle: str, initial_data: dict = None):
+    async def create_client(self, client_name: str, da_handle: str, initial_data: dict = None):
         """Creates a new client."""
         new_client = {
             "name": client_name,
-            "phone_handle": f"client_{client_name}_{advisor_handle}_{int(datetime.now().timestamp())}", 
+            "phone_handle": f"client_{client_name}_{da_handle}_{int(datetime.now().timestamp())}", 
             "vibe_tags": initial_data.get("vibe_tags", []) if initial_data else [],
             "facts": initial_data.get("new_facts", {}) if initial_data else {},
             "status": "lead",
-            "history_summary": f"Lead captured via Sarah (@{advisor_handle})"
+            "history_summary": f"Lead captured via Sarah (@{da_handle})"
         }
         res = self.supabase.table("clients").insert(new_client).execute()
         return res.data[0]
@@ -60,10 +60,10 @@ class AdvisorSkill:
     async def extract_intent(self, message_content: str, image_path: str = None, audio_path: str = None):
         """Uses Gemini to parse entities and vibe tags from text, image, or audio."""
         prompt_text = f"""
-        You are Atlas, a Chief of Staff and AI assistant for a high-end travel advisor named Sarah.
-        Your goal is to organize her client knowledge base and be helpful, conversational, and precise.
+        You are Dispatch, an AI assistant for Amazon Delivery Associates (DAs) named Sarah.
+        Your goal is to organize DA knowledge base and be helpful, conversational, and precise.
         
-        Extract the structured data from her message (and optional image/audio) about a client.
+        Extract the structured data from her message (and optional image/audio) about a drop-off.
         
         Fields to extract:
         - client_name (Who is the client? e.g. 'Bella', 'John'. If NOT specified/clear, use 'Unknown' or 'None')
@@ -89,7 +89,7 @@ class AdvisorSkill:
             try:
                 img = PIL.Image.open(image_path)
                 content_parts.append(img)
-                content_parts.append(" Analyze this image for travel details.")
+                content_parts.append(" Analyze this image for drop-off details.")
             except Exception as e:
                 print(f"Error loading image: {e}")
 
@@ -100,7 +100,7 @@ class AdvisorSkill:
                 audio_file = genai.upload_file(path=audio_path)
                 # Wait for processing? Usually fast for short clips.
                 content_parts.append(audio_file)
-                content_parts.append(" Analyze this voice note for travel details.")
+                content_parts.append(" Analyze this voice note for drop-off details.")
             except Exception as e:
                 print(f"Error loading audio: {e}")
         
@@ -140,7 +140,7 @@ class AdvisorSkill:
         """
         
         prompt = f"""
-        You are meaningful travel advisor assistant.
+        You are a helpful logistics and delivery assistant.
         Answer the following question about the client based strictly on the profile usage.
         
         Context: {context}
@@ -255,14 +255,14 @@ class AdvisorSkill:
 
     async def handle(self, message):
         """Main handler for the skill with conversational logic."""
-        advisor_handle = message.get("user_handle") 
+        da_handle = message.get("user_handle") 
         text = message.get("text")
         image_path = message.get("image_path")
         audio_path = message.get("audio_path")
         
         # 0. Check for Active Session (Waiting for user response)
-        if advisor_handle in self.user_sessions:
-            session = self.user_sessions[advisor_handle]
+        if da_handle in self.user_sessions:
+            session = self.user_sessions[da_handle]
             state = session.get("state")
             data = session.get("data")
             
@@ -274,13 +274,13 @@ class AdvisorSkill:
                     pending_client = data.get("client_name")
                     initial_intent = data.get("intent")
                     
-                    new_client = await self.create_client(pending_client, advisor_handle, initial_intent)
-                    del self.user_sessions[advisor_handle] # Clear session
+                    new_client = await self.create_client(pending_client, da_handle, initial_intent)
+                    del self.user_sessions[da_handle] # Clear session
                     
                     return f"✅ **Profile Created**: I've added {pending_client} to your client list as a Lead.\nWhat would you like to add for them?"
                 
                 elif any(w in text.lower() for w in ["no", "nope", "cancel", "wrong"]):
-                    del self.user_sessions[advisor_handle]
+                    del self.user_sessions[da_handle]
                     return "Understood. I won't create the profile. Let me know if you need anything else."
                 
                 # If ambiguous response, fall through to normal processing (maybe they changed topic)
@@ -293,7 +293,7 @@ class AdvisorSkill:
         print(f"Extracted: Client={client_name}, Intent={intent}")
         
         # 2. Identify Client
-        client_data, status = await self.identify_client(client_name, advisor_handle)
+        client_data, status = await self.identify_client(client_name, da_handle)
         
         # --- LOGIC BRANCHES ---
         
@@ -301,7 +301,7 @@ class AdvisorSkill:
         if status == "NOT_FOUND":
             if client_name and client_name not in ["Unknown", "None"]:
                 # Store intent in session and ask confirmation
-                self.user_sessions[advisor_handle] = {
+                self.user_sessions[da_handle] = {
                     "state": "confirm_create_client",
                     "data": {"client_name": client_name, "intent": intent}
                 }

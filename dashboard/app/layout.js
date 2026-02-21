@@ -1,8 +1,8 @@
 import '../styles/globals.css'
 
 export const metadata = {
-    title: 'Sarah\'s Atlas',
-    description: 'AI Operating System for Travel Advisors',
+    title: 'A-to-Z Dispatch',
+    description: 'Knowledge Graph for Delivery Associates',
 }
 
 export default function RootLayout({ children }) {

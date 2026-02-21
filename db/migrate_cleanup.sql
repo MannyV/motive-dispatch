@@ -1,4 +1,4 @@
--- Migration: Remove 'Outreach' status for Fora Style Refinement
+-- Migration: Remove 'Outreach' status for A-to-Z Dispatch Style Refinement
 
 -- 1. Temporarily drop the constraint
 ALTER TABLE clients DROP CONSTRAINT IF EXISTS clients_status_check;
