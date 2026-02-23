@@ -18,7 +18,7 @@ if not all([SUPABASE_URL, SUPABASE_KEY, TELEGRAM_TOKEN]):
 
 
 def main():
-    print("Starting A-to-Z Dispatch MVP...")
+    print("Starting A-to-Z Dispatch MVP... Ready for dispatch.")
     
     # Initialize Supabase Client
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -33,4 +33,4 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\nShutting down...")
+        print("\nShutting down gracefully...")
