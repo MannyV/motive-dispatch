@@ -1,3 +1,4 @@
+# Seed data preparation script
 import os
 import random
 import json
