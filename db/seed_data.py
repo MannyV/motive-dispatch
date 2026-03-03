@@ -34,7 +34,6 @@ def seed():
 
     # 0. Cleanup
     print("Clearing existing data...")
-    supabase.table("trips").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
     supabase.table("clients").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
     
     for i, name in enumerate(CLIENT_NAMES):
@@ -81,26 +80,7 @@ def seed():
         client_id = res.data[0]['id']
         print(f"Created {name} ({status})")
         
-        # 2. Add 1-3 Trips
-        num_trips = random.randint(1, 3)
-        for _ in range(num_trips):
-            trip_dest = random.choice(DESTINATIONS)
-            trip_status = "booked" if status == "closed" or random.random() > 0.7 else "draft"
-            
-            trip_data = {
-                "client_id": client_id,
-                "destination": trip_dest,
-                "status": trip_status,
-                "created_at": (datetime.now() - timedelta(days=random.randint(1, 20))).isoformat(),
-                "detected_entities": {
-                    "extracted": {
-                        "hotel_name": trip_dest.split(",")[0],
-                        "dates": "Spring 2026"
-                    }
-                }
-            }
-            supabase.table("trips").insert(trip_data).execute()
-            print(f"  -> Added Trip: {trip_dest} ({trip_status})")
+
 
 if __name__ == "__main__":
     seed()
