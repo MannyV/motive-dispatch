@@ -30,7 +30,7 @@ DESTINATIONS = [
 STATUSES = ['lead', 'proposal', 'planning', 'closed']
 
 def seed():
-    print("Seeding 12 VIP Clients...")
+    print("Seeding 12 VIP Clients to the database...")
 
     # 0. Cleanup
     print("Clearing existing data...")
