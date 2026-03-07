@@ -24,7 +24,7 @@ class DispatchSkill:
 
         safe_name = location_identifier.strip()
         
-        response = self.supabase.table("atoz_dispatch_intelligence").select("*").ilike("location_identifier", f"%{safe_name}%").execute()
+        response = self.supabase.table("motive_dispatch_intelligence").select("*").ilike("location_identifier", f"%{safe_name}%").execute()
         
         if response.data:
             return response.data[0], "FOUND"
@@ -38,7 +38,7 @@ class DispatchSkill:
             "location_identifier": location_identifier,
             "structured_data": intent
         }
-        res = self.supabase.table("atoz_dispatch_intelligence").insert(new_record).execute()
+        res = self.supabase.table("motive_dispatch_intelligence").insert(new_record).execute()
         return res.data[0]
 
     async def update_location_intel(self, location_id, current_data: dict, new_intent: dict):
@@ -62,7 +62,7 @@ class DispatchSkill:
         update_data = {
             "structured_data": merged_structured
         }
-        self.supabase.table("atoz_dispatch_intelligence").update(update_data).eq("id", location_id).execute()
+        self.supabase.table("motive_dispatch_intelligence").update(update_data).eq("id", location_id).execute()
         return merged_structured
 
     async def extract_intent(self, message_content: str, image_path: str = None, audio_path: str = None):

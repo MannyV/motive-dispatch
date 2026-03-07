@@ -3,10 +3,10 @@
 :root {
   --background: #f9fbfc;
   --foreground: #111827;
-  --amazon-dark: #232f3e;
-  --amazon-orange: #ff9900;
-  --amazon-teal: #008296;
-  --amazon-light-teal: #18aebf;
+  --motive-dark: #232f3e;
+  --motive-orange: #ff9900;
+  --motive-teal: #008296;
+  --motive-light-teal: #18aebf;
   --border-color: #e5e7eb;
 }
 
