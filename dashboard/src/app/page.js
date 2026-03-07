@@ -134,7 +134,7 @@ export default function DispatchDashboard() {
   return (
     <div className="min-h-screen bg-[#f9fbfc] text-slate-800 font-sans selection:bg-[#008296]/20 relative">
 
-      {/* Top Navigation Bar - Amazon Dark Theme */}
+      {/* Top Navigation Bar - Motive Dark Theme */}
       <header className="sticky top-0 z-50 bg-[#232f3e] text-white flex flex-col shadow-sm">
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-6">
@@ -143,7 +143,7 @@ export default function DispatchDashboard() {
                 a
               </div>
               <h1 className="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-                A-to-Z <span className="font-normal text-slate-300">Dispatch</span>
+                Motive <span className="font-normal text-slate-300">Dispatch</span>
               </h1>
             </div>
 
@@ -193,7 +193,7 @@ export default function DispatchDashboard() {
                 <div className="relative group/tooltip ml-auto md:ml-0 md:inline-block">
                   <Info className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 transition-colors" />
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-white text-slate-700 text-[11px] p-3 rounded shadow-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[120] font-normal normal-case tracking-normal border border-slate-200 pointer-events-auto text-left">
-                    <p className="mb-2">Daily active DAs utilizing A-to-Z Routing Intelligence divided by your total available roster.</p>
+                    <p className="mb-2">Daily active DAs utilizing Motive Routing Intelligence divided by your total available roster.</p>
                     <a href="#" className="text-[#008296] hover:text-[#18aebf] transition-colors hover:underline inline-flex items-center gap-1 font-medium">View Roster Dashboard &rarr;</a>
                   </div>
                 </div>
@@ -203,7 +203,7 @@ export default function DispatchDashboard() {
                 <span className="text-sm text-slate-500 border-l border-slate-200 pl-2">DAs</span>
               </div>
               <span className="text-[11px] text-[#008296] font-medium flex items-center">
-                <TrendingUp className="w-3 h-3 mr-1" /> Utilizing A-to-Z Routing
+                <TrendingUp className="w-3 h-3 mr-1" /> Utilizing Motive Routing
               </span>
             </div>
             {/* Metric 2 */}
@@ -231,7 +231,7 @@ export default function DispatchDashboard() {
                 <div className="relative group/tooltip ml-auto md:ml-0 md:inline-block">
                   <Info className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 transition-colors" />
                   <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-60 bg-white text-slate-700 text-[11px] p-3 rounded shadow-2xl opacity-0 invisible group-hover/tooltip:opacity-100 group-hover/tooltip:visible transition-all duration-200 z-[120] font-normal normal-case tracking-normal border border-slate-200 pointer-events-auto text-left">
-                    <p className="mb-2">Measure of high-risk "Late" mapped packages successfully delivered exclusively via direct A-to-Z Routing intervention.</p>
+                    <p className="mb-2">Measure of high-risk "Late" mapped packages successfully delivered exclusively via direct Motive Routing intervention.</p>
                     <a href="#" className="text-[#008296] hover:text-[#18aebf] transition-colors hover:underline inline-flex items-center gap-1 font-medium">View OTD Scorecard &rarr;</a>
                   </div>
                 </div>
@@ -574,7 +574,7 @@ export default function DispatchDashboard() {
 
             {/* Actions */}
             <div className="px-6 py-4 border-t border-slate-200 bg-white flex justify-between items-center">
-              <span className="text-xs text-slate-400 font-medium">Logged securely via A-to-Z Routing Engine</span>
+              <span className="text-xs text-slate-400 font-medium">Logged securely via Motive Routing Engine</span>
               <div className="flex gap-2">
                 <button className="px-4 py-2 border border-slate-300 text-slate-600 text-sm font-medium rounded hover:bg-slate-50 transition-colors">
                   Flag as Incorrect

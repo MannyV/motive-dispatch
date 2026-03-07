@@ -5,7 +5,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata = {
-  title: "A-to-Z Dispatch",
+  title: "Motive Dispatch",
   description: "Knowledge Graph for Delivery Associates",
 };
 

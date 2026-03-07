@@ -68,7 +68,7 @@ class DispatchSkill:
     async def extract_intent(self, message_content: str, image_path: str = None, audio_path: str = None):
         """Uses Gemini to parse entities and tags from text, image, or audio."""
         prompt_text = f"""
-        You are the intelligence engine for 'A-to-Z Dispatch'.
+        You are the intelligence engine for 'Motive Dispatch'.
         Extract spatial and operational intelligence from Delivery Associates.
         Normalize directions. Output strictly in JSON.
         

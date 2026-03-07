@@ -1,4 +1,4 @@
-# Amazon Last Mile Introduces "Dispatch": A Conversational Knowledge Graph to Eliminate Last-50-Feet Delivery Friction.
+# Motive Introduces "Dispatch": A Conversational Knowledge Graph to Eliminate Last-50-Feet Delivery Friction.
 
 **Date**: February 20, 2026
 
