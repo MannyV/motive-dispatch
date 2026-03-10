@@ -5,8 +5,8 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
 
 export const metadata = {
-  title: "Motive Dispatch",
-  description: "Knowledge Graph for Delivery Associates",
+  title: "Motive FleetIQ",
+  description: "AI-powered Last-Feet Intelligence for Fleet Management",
 };
 
 export default function RootLayout({ children }) {

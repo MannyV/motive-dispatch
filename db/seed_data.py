@@ -33,10 +33,10 @@ LOCATIONS = [
 ]
 
 def seed():
-    print("Clearing existing locations from Motive Dispatch database...")
+    print("Clearing existing locations from Motive FleetIQ database...")
     supabase.table("motive_dispatch_intelligence").delete().neq("location_identifier", "nothing").execute()
 
-    print("Seeding Motivation Dispatch database with initial locations...")
+    print("Seeding Motivation FleetIQ database with initial locations...")
     
     for loc in LOCATIONS:
         record = {

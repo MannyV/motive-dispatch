@@ -2,14 +2,14 @@
 
 **Date**: February 20, 2026
 
-## Summary
-Dispatch is an AI-powered, hyper-local knowledge graph built passively through natural language. It allows Delivery Associates (DAs) to log and retrieve complex drop-off instructions using simple voice notes, ensuring that the tribal knowledge of veteran drivers is instantly accessible to the entire DSP fleet, protecting speed metrics and DSP profitability.
+### The Problem
+Off-the-shelf routing APIs (Google Maps, Mapbox) only take a driver to the curb. For commercial deliveries, the *real* friction starts after the van parks: finding hidden service entrances, acquiring gate codes, or knowing that the front desk refuses large packages. 
 
-## The Problem
-As we scale Speed programs like Sub Same Day (SSD) globally, the greatest threat to On-Time Delivery (OTD) is urban density. In regions like FR, IT, and the UK, GPS coordinates only get a DA to the building. Finding the exact mailroom, the correct alleyway, or navigating a broken intercom burns crucial minutes. For a DSP, these lost minutes attack their margins on Variable Costs, forcing them to pay more hourly labor for fewer completed packages. Furthermore, when new DAs or Flex drivers take these routes, they lack the "tribal knowledge" of veteran drivers, leading to high failure rates and friction.
+### The FleetIQ Solution
+FleetIQ is an AI-powered, hyper-local knowledge graph built passively through natural language. It allows Delivery Associates (DAs) to log and retrieve complex drop-off instructions using simple voice notes, ensuring that the tribal knowledge of veteran drivers is instantly accessible to the entire DSP fleet, protecting speed metrics and DSP profitability.
 
-## The Solution
-Dispatch operates directly in the DA's workflow via messaging apps. A DA simply speaks to Dispatch (e.g., "Building C front door is broken, use the alley"). An LLM parses this unstructured data into a strict spatial database. When the next DA approaches that same complex building, Dispatch proactively retrieves the structured notes and pushes a clean, hyper-local instruction to their device, eliminating the search time.
+### How it works
+FleetIQ operates directly in the DA's workflow via messaging apps. A DA simply speaks to FleetIQ (e.g., "Building C front door is broken, use the alley"). An LLM parses this unstructured data into a strict spatial database. When the next DA approaches that same complex building, FleetIQ proactively retrieves the structured notes and pushes a clean, hyper-local instruction to their device, eliminating the search time.
 
 ## FAQ
 

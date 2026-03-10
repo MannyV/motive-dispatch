@@ -1,6 +1,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE motive_dispatch_intelligence (
+CREATE TABLE motive_fleetiq_intelligence (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     dsp_id VARCHAR(50) DEFAULT 'DSP_NY_01',
     location_identifier TEXT UNIQUE NOT NULL,

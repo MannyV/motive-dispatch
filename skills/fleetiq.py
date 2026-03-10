@@ -5,7 +5,7 @@ from datetime import datetime
 from google import genai
 from supabase import Client
 
-class DispatchSkill:
+class FleetIQSkill:
     def __init__(self, supabase_client: Client):
         self.supabase = supabase_client
         
@@ -68,7 +68,7 @@ class DispatchSkill:
     async def extract_intent(self, message_content: str, image_path: str = None, audio_path: str = None):
         """Uses Gemini to parse entities and tags from text, image, or audio."""
         prompt_text = f"""
-        You are the intelligence engine for 'Motive Dispatch'.
+        You are the intelligence engine for 'Motive FleetIQ'.
         Extract spatial and operational intelligence from Delivery Associates.
         Normalize directions. Output strictly in JSON.
         
@@ -158,7 +158,7 @@ class DispatchSkill:
         if status == "NOT_FOUND":
             if location_id and location_id.lower() not in ["unknown", "none"]:
                 await self.create_location_intel(intent)
-                return f"Got it. I've successfully logged the new intelligence for {location_id} into the Dispatch Knowledge Graph and routed it to active units."
+                return f"Got it. I've successfully logged the new intelligence for {location_id} into the FleetIQ Knowledge Graph and routed it to active units."
             else:
                 return "I'm listening. Could you specify which location you're referring to?"
 

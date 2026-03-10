@@ -58,7 +58,7 @@ const mockInterventions = [
     trigger: "requested access to 14 Washington Square N.",
     action: "Sent code #1984",
     timeSaved: "4m",
-    transcript: "Mike: 'Hey I am at 14 Washington Square N, is there a code for the gate?'\nDispatch Bot: 'Yes, checking knowledge graph... The code is #1984.'",
+    transcript: "Mike: 'Hey I am at 14 Washington Square N, is there a code for the gate?'\nFleetIQ Bot: 'Yes, checking knowledge graph... The code is #1984.'",
     status: "Auto-Resolved",
     source: "macro",
     thumbnail: "https://loremflickr.com/400/400/gate,keypad/all"
@@ -84,7 +84,7 @@ const mockInterventions = [
     trigger: "stuck at 100 Broadway.",
     action: "Directed to Loading Dock",
     timeSaved: "6m",
-    transcript: "James: 'Front desk won't take these packages for 100 Broadway.'\nDispatch Bot: '100 Broadway policy requires large deliveries through the Loading Dock. Walk past the green awning.'",
+    transcript: "James: 'Front desk won't take these packages for 100 Broadway.'\nFleetIQ Bot: '100 Broadway policy requires large deliveries through the Loading Dock. Walk past the green awning.'",
     status: "Auto-Resolved",
     source: "macro",
     thumbnail: "https://loremflickr.com/400/400/loading,dock/all"
@@ -110,7 +110,7 @@ const mockInterventions = [
     trigger: "requested access to 333 W 42nd St.",
     action: "Sent code #1122",
     timeSaved: "5m",
-    transcript: "Chris: 'Hey, I'm at the white side gate at 42nd St.'\nDispatch Bot: 'I see a white gate in the graph. The code is #1122.'",
+    transcript: "Chris: 'Hey, I'm at the white side gate at 42nd St.'\nFleetIQ Bot: 'I see a white gate in the graph. The code is #1122.'",
     status: "Auto-Resolved",
     source: "macro",
     thumbnail: "https://loremflickr.com/400/400/white,gate/all"
@@ -123,7 +123,7 @@ const mockInterventions = [
     trigger: "stuck at 888 8th Ave.",
     action: "Directed to Valet Area",
     timeSaved: "3m",
-    transcript: "Sam: 'Nowhere to park here.'\nDispatch Bot: 'Graph shows valet area allows quick 5-min drops. Pull in past the driveway.'",
+    transcript: "Sam: 'Nowhere to park here.'\nFleetIQ Bot: 'Graph shows valet area allows quick 5-min drops. Pull in past the driveway.'",
     status: "Auto-Resolved",
     source: "macro",
     thumbnail: "https://loremflickr.com/400/400/hotel,valet/all"
@@ -156,7 +156,7 @@ const mockInterventions = [
   }
 ];
 
-export default function DispatchDashboard() {
+export default function FleetIQDashboard() {
   const [locations, setLocations] = useState(mockLocationsFallback);
   const [interventions, setInterventions] = useState(mockInterventions);
   const [selectedLocation, setSelectedLocation] = useState(null);
@@ -181,13 +181,13 @@ export default function DispatchDashboard() {
           cues: Array.isArray(item.structured_data?.visual_cues) ? item.structured_data.visual_cues.join(', ') : (item.structured_data?.visual_cues || "None"),
           verified: new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           confidence: "99%", // Placeholder for AI confidence
-          recentHistory: ["AI Logged via Dispatch Bot (" + new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ")"]
+          recentHistory: ["AI Logged via FleetIQ Bot (" + new Date(item.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ")"]
         }));
 
         const dynamicInterventions = data.map(item => ({
           id: 'live-' + item.id,
           type: "mic",
-          da: "DispatchDA",
+          da: "FleetIQ DA",
           van: "Active",
           trigger: `logged new intel for ${item.location_identifier}.`,
           action: "Knowledge Graph updated",
@@ -242,7 +242,7 @@ export default function DispatchDashboard() {
           <a href="#" className="flex items-center gap-3 px-6 py-2.5 hover:bg-white/10 transition-colors"><Users className="w-5 h-5 text-slate-400" /> Workforce <span className="ml-auto text-[10px] border border-slate-500 rounded px-1">NEW</span></a>
           <div className="relative">
             <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#0066FF]"></div>
-            <a href="#" className="flex items-center gap-3 px-6 py-2.5 text-[#3b82f6] bg-white/5"><Navigation className="w-5 h-5" /> Dispatch</a>
+            <a href="#" className="flex items-center gap-3 px-6 py-2.5 text-[#3b82f6] bg-white/5"><Navigation className="w-5 h-5" /> FleetIQ</a>
           </div>
           <a href="#" className="flex items-center gap-3 px-6 py-2.5 hover:bg-white/10 transition-colors"><Target className="w-5 h-5 text-slate-400" /> Coaching</a>
           <a href="#" className="flex items-center gap-3 px-6 py-2.5 hover:bg-white/10 transition-colors"><MessageSquare className="w-5 h-5 text-slate-400" /> Messages</a>
@@ -264,13 +264,13 @@ export default function DispatchDashboard() {
           <div className="flex items-center text-[14px] text-slate-500 font-medium">
             <span className="hover:text-slate-800 cursor-pointer">Operations</span>
             <span className="mx-3 text-slate-300">/</span>
-            <span className="hover:text-slate-800 cursor-pointer">Dispatch</span>
+            <span className="hover:text-slate-800 cursor-pointer">FleetIQ</span>
             <span className="mx-3 text-slate-300">/</span>
-            <span className="font-semibold text-slate-800">Dispatch Dashboard</span>
+            <span className="font-semibold text-slate-800">FleetIQ Dashboard</span>
           </div>
           <div className="flex items-center gap-3">
             <button className="text-[13px] font-semibold border border-slate-300 rounded px-4 py-1.5 text-slate-700 hover:bg-slate-50 bg-white shadow-sm">Export <ChevronDown className="w-3 h-3 inline ml-1" /></button>
-            <button className="text-[13px] font-semibold border border-slate-300 rounded px-4 py-1.5 text-slate-700 hover:bg-slate-50 bg-white shadow-sm">Make a Copy</button>
+            <button className="text-[13px] font-semibold border border-slate-300 rounded px-4 py-1.5 text-slate-700 hover:bg-slate-50 bg-white shadow-sm">Duplicate</button>
           </div>
         </header>
 
@@ -702,7 +702,7 @@ export default function DispatchDashboard() {
 
                 <div className="flex items-center gap-4 pt-2">
                   <div className="flex-1 bg-white border border-[#0066FF]/30 rounded p-4 relative shadow-[0_2px_10px_rgba(0,130,150,0.05)]">
-                    <div className="absolute -top-2 left-4 bg-[#0066FF] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">Dispatch Outcome</div>
+                    <div className="absolute -top-2 left-4 bg-[#0066FF] text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">FleetIQ Outcome</div>
                     <p className="text-sm font-medium text-slate-800 mt-1">{selectedIntervention.action}</p>
                   </div>
 
