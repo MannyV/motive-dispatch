@@ -1,4 +1,5 @@
 "use client";
+// Motive FleetIQ Dashboard v1.1
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -211,13 +212,17 @@ export default function FleetIQDashboard() {
     // Setup Realtime Subscription
     const channel = supabase
       .channel('schema-db-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'motive_dispatch_intelligence' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'motive_dispatch_intelligence' }, (payload) => {
+        console.log("Realtime event received!", payload);
         // Just refetch on any change to keep logic simple
         fetchLocations();
       })
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Realtime subscription status:", status);
+      });
 
     return () => {
+      console.log("Cleaning up realtime subscription...");
       supabase.removeChannel(channel);
     };
   }, []);

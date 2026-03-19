@@ -18,7 +18,7 @@ if not all([SUPABASE_URL, SUPABASE_KEY, TELEGRAM_TOKEN]):
 
 
 def main():
-    print("Starting Motive FleetIQ MVP v1.0... Ready for operation! 🚀")
+    print("Starting Motive FleetIQ MVP v1.1... Ready for operation! 🚀")
     
     # Initialize Supabase Client
     supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)

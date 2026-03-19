@@ -25,7 +25,7 @@ Because it requires zero form-filling. DAs simply hold a button and speak. It al
 - **Memory**: Supabase (PostgreSQL + Realtime)
 - **Listener**: Telegram Bot (`gateway.py`)
 - **Brain**: Skill Router (`router.py`)
-- **Skills**: Modular capabilities (`skills/dispatch.py`)
+- **Skills**: Modular capabilities (`skills/fleetiq.py`)
 
 ### 1. Database (Supabase)
 1. Create a new Supabase project.
